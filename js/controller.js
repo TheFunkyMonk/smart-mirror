@@ -28,7 +28,7 @@
         tmhDynamicLocale.set(config.language.toLowerCase());
         moment.locale(config.language);
         console.log('moment local', moment.locale());
-        
+
         //Update the time
         function updateTime(){
             $scope.date = new moment();
@@ -132,7 +132,7 @@
             		console.log(error);
             	});
             };
-            
+
             refreshComic();
             $interval(refreshComic, 12*60*60000); // 12 hours
 
@@ -165,10 +165,10 @@
             });
 
             // Hide everything and "sleep"
-            AnnyangService.addCommand(commands['debug']['voice'], function() {
+            /*AnnyangService.addCommand(commands['debug']['voice'], function() {
                 console.debug("Boop Boop. Showing debug info...");
                 $scope.debug = true;
-            });
+            });*/
 
             // Show map
             AnnyangService.addCommand(commands['map_show']['voice'], function() {
@@ -210,30 +210,30 @@
             });
 
             // Search images
-            AnnyangService.addCommand(commands['images_search']['voice'], function(term) {
+            /*AnnyangService.addCommand(commands['images_search']['voice'], function(term) {
                 console.debug("Showing", term);
-            });
+            });*/
 
             // Change name
-            AnnyangService.addCommand(commands['account_set_name']['voice'], function(name) {
+            /*AnnyangService.addCommand(commands['account_set_name']['voice'], function(name) {
                 console.debug("Hi", name, "nice to meet you");
                 $scope.user.name = name;
-            });
+            });*/
 
             // Set a reminder
-            AnnyangService.addCommand(commands['reminder_insert']['voice'], function(task) {
+            /*AnnyangService.addCommand(commands['reminder_insert']['voice'], function(task) {
                 console.debug("I'll remind you to", task);
-            });
+            });*/
 
             // Clear reminders
-            AnnyangService.addCommand(commands['reminder_clear']['voice'], function() {
+            /*AnnyangService.addCommand(commands['reminder_clear']['voice'], function() {
                 console.debug("Clearing reminders");
-            });
+            });*/
 
             // Check the time
-            AnnyangService.addCommand(commands['time_show']['voice'], function(task) {
+            /*AnnyangService.addCommand(commands['time_show']['voice'], function(task) {
                  console.debug("It is", moment().format('h:mm:ss a'));
-            });
+            });*/
 
             // Turn lights off
             AnnyangService.addCommand(commands['light_action']['voice'], function(state, action) {
@@ -256,7 +256,7 @@
                     $scope.focus = "xkcd";
                 });
             });
-            
+
             // Show Dilbert comic
             AnnyangService.addCommand('Show Dilbert (comic)', function(state, action) {
                 console.debug("Fetching a Dilbert comic for you.");

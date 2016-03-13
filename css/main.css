@@ -13,7 +13,8 @@ h1, h2, h3, h4, h5 {
   font-weight: 300; }
 
 h1 {
-  font-size: 120px; }
+  font-size: 120px;
+  margin-top: 500px; }
 
 dt {
   font-weight: 600; }

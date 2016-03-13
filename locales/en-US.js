@@ -19,11 +19,11 @@ var commands = {
         "voice": "Wake up",
         "description" : "Wake up"
     },
-    "debug": {
+    /*"debug": {
         "text" : "Show debug information",
         "voice": "Show debug information",
         "description" : "Show debug information"
-    },
+    },*/
     "map_show": {
         "text" : "Show map",
         "voice": "Show map",
@@ -54,7 +54,7 @@ var commands = {
         "voice": "(map) reset zoom",
         "description" : "Resets zoom"
     },
-    "account_set_name": {
+    /*"account_set_name": {
         "text" : "My name is ________",
         "voice": "My (name is)(name\\'s) *name",
         "description" : "My (name is)(name\\'s) *name"
@@ -63,7 +63,7 @@ var commands = {
         "text" : "Show me ________",
         "voice": "Show me *term",
         "description" : "Will show you pictures of the requested item."
-    },
+    },*/
     "image_giphy": {
         "text" : "Giphy ________",
         "voice": "giphy *img",
@@ -74,7 +74,7 @@ var commands = {
         "voice": "Show xkcd",
         "description" : "Shows the most recent xkcd comic."
     },
-    "reminder_insert": {
+    /*"reminder_insert": {
         "text" : "Remind me to ________",
         "voice": "Remind me to *task",
         "description" : "Add something to the reminders list."
@@ -88,7 +88,7 @@ var commands = {
         "text" : "what time is it",
         "voice": "what time is it",
         "description" : "what time is it"
-    },
+    },*/
     "light_action": {
         "text" : "Turn the (state) light (action)",
         "voice": "(turn) (the) :state (the) light(s) *action",
