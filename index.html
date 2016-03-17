@@ -12,7 +12,7 @@
     <script src="bower_components/angular-animate/angular-animate.js"></script>
     <script src="bower_components/angular-dynamic-locale/src/tmhDynamicLocale.js"></script>
     <!-- endbower -->
-    
+
     <script src="bower_components/moment/min/locales.min.js"></script>
     <script src="js/inc/skycons.js"></script>
 
@@ -44,8 +44,8 @@
   <body ng-controller="MirrorCtrl as commands" ng-cloak>
     <div class="top">
       <div class="top-left">
-        <div class="date">{{date.format('dddd')}}, {{date.format('LL')}}</div>
-        <!-- <div class="time">{{date.format('LT')}}</div> -->
+        <div class="date grey">{{date.format('dddd')}}, {{date.format('LL')}}</div>
+        <div class="time">{{date.format('LT')}}</div>
         <ul class="calendar fade" ng-show="focus == 'default'">
             <li class="event" ng-repeat="event in calendar">
                 <div class="event-details">
