@@ -40,7 +40,7 @@ app.on('ready', function() {
     }
   }
 
-  var browserWindowOptions = {width: 800, height: 600, icon: 'favicon.ico' , kiosk:true, autoHideMenuBar:true, darkTheme:true};
+  var browserWindowOptions = {width: 800, height: 600, icon: 'favicon.ico' , kiosk:false, fullscreen:true, autoHideMenuBar:true, darkTheme:true};
   if (externalDisplay) {
     browserWindowOptions.x = externalDisplay.bounds.x + 50;
     browserWindowOptions.y = externalDisplay.bounds.y + 50
@@ -53,7 +53,7 @@ app.on('ready', function() {
   mainWindow.loadURL('file://' + __dirname + '/index.html');
 
   // Open the DevTools if run with "npm start dev"
-  if(process.argv[2] == "dev"){  
+  if(process.argv[2] == "dev"){
     mainWindow.webContents.openDevTools();
   }
 
