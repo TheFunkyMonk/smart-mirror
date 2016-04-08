@@ -3,7 +3,7 @@
         "commands" : "Dí \"¿Qué digo?\" para mostrar las órdenes..."
     },
     "traffic" : {
-        "time_to" : "Tiempo al {{destination}}: "
+        "time_to" : "Tiempo al {{name}}: "
     },
     "timer": {
       "one": "Uno",
@@ -66,11 +66,6 @@
             "text": "Resetea el mapa",
             "voice": "Resetea (el) (mapa)",
             "description": "Resetea (el) (mapa)"
-        },
-        "account_set_name": {
-            "text": "Mi nombre es _______",
-            "voice": "Mi nombre es *name",
-            "description": "Estable tu nombre"
         },
         "images_search": {
             "text": "Busca imagen de _______",

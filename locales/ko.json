@@ -3,7 +3,7 @@
         "commands" : "Say \"사용가능한 질문\" to see a list of commands..."
     },
     "traffic" : {
-        "time_to" : "{{destination}} 에 시간: "
+        "time_to" : "{{name}} 에 시간: "
     },
     "timer": {
       "one": "일",
@@ -66,11 +66,6 @@
             "text": "지도 리셋",
             "voice": "(지도) 리셋",
             "description": "지도를 이전 값으로 되돌립니다."
-        },
-        "account_set_name": {
-            "text": "나의 이름은  ________ 이야",
-            "voice": "나의 이름은 *name이야",
-            "description": "나의 이름은 *name이야"
         },
         "images_search": {
             "text": "________ 보여 줘",

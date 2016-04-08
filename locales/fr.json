@@ -3,7 +3,7 @@
         "commands" : "Dis: \"Que puis-je dire?\" pour voir une liste de commandes..."
     },
     "traffic" : {
-        "time_to" : "Temps de {{destination}}: "
+        "time_to" : "Temps de {{name}}: "
     },
     "timer": {
       "one": "Une",
@@ -66,11 +66,6 @@
             "text": "Reset zoom",
             "voice": "(map) reset zoom",
             "description": "Réinitilalise la fonction zoom"
-        },
-        "account_set_name": {
-            "text": "Mon nom est ________",
-            "voice": "Mon nom est *name",
-            "description": "Mon nom est *name"
         },
         "images_search": {
             "text": "Recherche image  ________",

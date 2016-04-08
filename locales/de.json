@@ -3,7 +3,7 @@
       "commands" : "Sagen Sie \"Was kann ich sagen?\" eine Liste von Befehlen zu sehen..."
     },
     "traffic" : {
-        "time_to" : "Zeit zu {{destination}}: "
+        "time_to" : "Zeit zu {{name}}: "
     },
     "timer": {
       "one": "Eine",
@@ -66,11 +66,6 @@
             "text": "Normalansicht",
             "voice": "(Karte) Normalansicht",
             "description": "Setzt die Ansicht zurück"
-        },
-        "account_set_name": {
-            "text": "Mein Name ist ________",
-            "voice": "Mein (Name ist) *name",
-            "description": "Mein (Name ist) *name"
         },
         "images_search": {
             "text": "Zeige mir ________",

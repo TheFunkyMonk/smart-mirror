@@ -134,12 +134,10 @@
             $interval(greetingUpdater, 120000);
 
             var refreshTrafficData = function() {
-                TrafficService.getTravelDuration().then(function(durationTraffic) {
-                    console.log("Traffic", durationTraffic);
-                    $scope.traffic = {
-                        destination: config.traffic.name,
-                        duration : durationTraffic
-                    };
+                TrafficService.getDurationForTrips().then(function(tripsWithTraffic) {
+                    console.log("Traffic", tripsWithTraffic);
+                    //Todo this needs to be an array of traffic objects -> $trips[]
+                    $scope.trips = tripsWithTraffic;
                 }, function(error){
                     $scope.traffic = {error: error};
                 });
@@ -246,12 +244,6 @@
             // Search images
             addCommand('images_search', function(term) {
                 console.debug("Showing", term);
-            });
-
-            // Change name
-            addCommand('account_set_name', function(name) {
-                console.debug("Hi", name, "nice to meet you");
-                $scope.user.name = name;
             });
 
             // Set a reminder
