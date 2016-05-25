@@ -5,10 +5,38 @@
     "traffic" : {
         "time_to" : "Tiempo al {{name}}: "
     },
+    "reminders": {
+        "empty": "No recuerdo"
+    },
     "timer": {
       "one": "Uno",
       "minute": "Minuto(s)?",
       "second": "Segundo(s)?"
+    },
+    "lights": {
+        "colors": {
+            "red": "rojo",
+            "dark_green": "verde oscuro",
+            "green": "verde",
+            "blue": "azul",
+            "yellow": "amarillo",
+            "orange":  "naranja",
+            "pink": "rosa",
+            "purple": "púrpura",
+            "white": "blanco",
+            "movie": "película",
+            "colorloop": "color",
+            "stop": "detener"
+        },
+        "intensity": {
+            "increase": "aumentos",
+            "decrease": "disminuye",
+            "max": "max"
+        },
+        "action": {
+            "on": "enciende",
+            "off": "apagar"
+        }
     },
     "commands": {
         "title" : "Listado de Órdenes",
@@ -67,10 +95,15 @@
             "voice": "Resetea (el) (mapa)",
             "description": "Resetea (el) (mapa)"
         },
-        "images_search": {
+        "video_search": {
             "text": "Busca imagen de _______",
             "voice": "Busca imagen de *term",
             "description": "Busca una imagen"
+        },
+        "video_stop": {
+            "text": "Stop video",
+            "voice": "stop (the) video",
+            "description": "Stops the playback of video content."
         },
         "image_giphy": {
             "text": "Busca animacion de _______",
@@ -97,6 +130,11 @@
             "voice": "Limpia la tareas pendientes",
             "description": "Limpia la tareas pendientes"
         },
+        "reminder_show": {
+            "text": "Muéstrame la lista de retiro",
+            "voice": "Muéstrame la lista de retiro",
+            "description": "Muestra la lista de retiro"
+        },
         "time_show": {
             "text": "¿Qué hora es?",
             "voice": "que hora es",
@@ -122,9 +160,29 @@
             "voice": "continua (el) temporizador",
             "description": "Continua el temporizador."
         },
+        "sc_play": {
+            "text": "SoundCloud play ________",
+            "voice": "SoundCloud play *query",
+            "description": "Play a song on SoundCloud"
+        },
+        "sc_pause": {
+            "text": "SoundCloud pause/stop",
+            "voice": "SoundCloud (pause)(post)(stop)(stock)",
+            "description": "Stop/pause SoundCoud playback"
+        },
+        "sc_resume": {
+            "text": "SoundCloud play",
+            "voice": "SoundCloud (play)(resume)",
+            "description": "Resumes playback"
+        },
+        "sc_replay": {
+            "text": "SoundCloud replay",
+            "voice": "SoundCloud replay",
+            "description": "Replays the current song on SoundCloud"
+        },
         "light_action": {
-            "text": "Cambia las luces [estado] a [acción]",
-            "voice": "cambia las luces :state a *action",
+            "text": "[estado] las luces a [acción]",
+            "voice": ":state las luces a *action",
             "description": "Cambia el estado de las luces"
         }
     }
