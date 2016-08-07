@@ -7,8 +7,18 @@
     service.events = [];
 
     service.getCalendarEvents = function() {
+      var deferred = $q.defer();
+
       service.events = [];
-      return loadFile(config.calendar.icals);
+      if(typeof config.calendar != 'undefined' && typeof config.calendar.icals != 'undefined'){
+        loadFile(config.calendar.icals).then(function(){
+          deferred.resolve();
+        });
+      } else {
+        deferred.reject("No iCals defined");
+      }
+
+      return deferred.promise;
     }
 
     var loadFile = function(urls) {
@@ -50,6 +60,12 @@
       var cur_event = null;
       for (var i = 0; i < cal_array.length; i++) {
         var ln = cal_array[i];
+
+        // Extract calendar name
+        if (ln.startsWith('X-WR-CALNAME')) {
+          var calendarName = ln.split(':')[1];
+        }
+
         //If we encounted a new Event, create a blank event object + set in event options.
         if (!in_event && ln == 'BEGIN:VEVENT') {
           var in_event = true;
@@ -58,6 +74,7 @@
         //If we encounter end event, complete the object and add it to our events array then clear it for reuse.
         if (in_event && ln == 'END:VEVENT') {
           in_event = false;
+          cur_event.calendarName = calendarName;
           if(!contains(events, cur_event)) {
             events.push(cur_event);
           }
@@ -79,12 +96,21 @@
           //If the type is a start date, proccess it and store details
           if (type.startsWith('DTSTART')) {
             cur_event.start = makeDate(type, val);
+            cur_event.startName = makeDate(type, val).calendar().toUpperCase();
           }
 
           //If the type is an end date, do the same as above
           else if (type.startsWith('DTEND')) {
             cur_event.end = makeDate(type, val);
+            
+            // Subtract one second so that single-day events endon the same day
+            cur_event.endName = makeDate(type, val).subtract(1, 'seconds').calendar().toUpperCase();
           }
+          
+          if (cur_event.startName && cur_event.endName) {
+            cur_event.label = cur_event.startName + " - " + cur_event.endName;
+          }
+          
           //Convert timestamp
           else if (type == 'DTSTAMP') {
             //val = makeDate(type, val);
@@ -99,8 +125,10 @@
           if ( type !== 'SUMMARY' || (type=='SUMMARY' && cur_event['SUMMARY'] == undefined)) {
             cur_event[type] = val;
           }
+          var keys = Object.keys(cur_event);
           if (cur_event['SUMMARY'] !== undefined && cur_event['RRULE'] !== undefined &&
-              cur_event['DTSTART'] !== undefined && cur_event['DTEND'] !== undefined) {
+              (keys.some(function(k){ return ~k.indexOf("DTSTART") })) &&
+                keys.some(function(k){ return ~k.indexOf("DTEND") })) {
             var options = new RRule.parseString(cur_event['RRULE']);
       			options.dtstart = cur_event.start.toDate();
       			var event_duration = cur_event.end.diff(cur_event.start,'minutes');
@@ -115,8 +143,11 @@
       				var startDate = moment(dt);
       				var endDate = moment(dt);
               endDate.add(event_duration, 'minutes');
+              recuring_event.calendarName = calendarName;
               recuring_event.start = startDate;
+              recuring_event.startName = startDate.calendar().toUpperCase();
               recuring_event.end = endDate;
+              recuring_event.endName = endDate.subtract(1, 'seconds').calendar().toUpperCase();
               if(!contains(events, recuring_event)) {
                 events.push(recuring_event);
               }

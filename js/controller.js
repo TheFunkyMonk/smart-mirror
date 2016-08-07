@@ -2,12 +2,13 @@
     'use strict';
 
     function MirrorCtrl(
-            AnnyangService,
+            SpeechService,
+            AutoSleepService,
             GeolocationService,
             WeatherService,
             FitbitService,
             MapService,
-            HueService,
+            LightService,
             CalendarService,
             ComicService,
             GiphyService,
@@ -16,33 +17,56 @@
             ReminderService,
             SearchService,
             SoundCloudService,
+            RssService,
+            StockService,
+            ScrobblerService,
             $rootScope, $scope, $timeout, $interval, tmhDynamicLocale, $translate) {
+
+        // Local Scope Vars
         var _this = this;
         $scope.listening = false;
         $scope.debug = false;
         $scope.focus = "default";
         $scope.user = {};
+        $scope.shownews = true;
         $scope.commands = [];
-        /*$translate('home.commands').then(function (translation) {
-            $scope.interimResult = translation;
-        });*/
         $scope.interimResult = $translate.instant('home.commands');
         $scope.layoutName = 'main';
-
         $scope.fitbitEnabled = false;
-        if (typeof config.fitbit != 'undefined') {
+        $scope.config = config;
+
+        if (typeof config.fitbit !== 'undefined') {
             $scope.fitbitEnabled = true;
         }
 
         //set lang
-        $scope.locale = config.language;
-        tmhDynamicLocale.set(config.language.toLowerCase());
-        moment.locale(config.language);
+        moment.locale(
+          (typeof config.language !== 'undefined')?config.language.substring(0, 2).toLowerCase(): 'en',
+          {
+            calendar : {
+              lastWeek : '[Last] dddd',
+              lastDay : '[Yesterday]',
+              sameDay : '[Today]',
+              nextDay : '[Tomorrow]',
+              nextWeek : 'dddd',
+              sameElse : 'L'
+            }
+          }
+        );
+
         console.log('moment local', moment.locale());
-        
+
         //Update the time
         function updateTime(){
             $scope.date = new moment();
+
+            // Auto wake at a specific time
+            if (typeof config.autoTimer !== 'undefined' && typeof config.autoTimer.auto_wake !== 'undefined' && config.autoTimer.auto_wake == moment().format('HH:mm:ss')) {
+                console.debug('Auto-wake', config.autoTimer.auto_wake);
+                $scope.focus = "default";
+                AutoSleepService.wake();
+                AutoSleepService.startAutoSleepTimer();
+            }
         }
 
         // Reset the command text
@@ -52,7 +76,20 @@
             });
         };
 
+        /**
+         * Register a refresh callback for a given interval (in minutes)
+         */
+        var registerRefreshInterval = function(callback, interval){
+            //Load the data initially
+            callback();
+            if(typeof interval !== 'undefined'){
+                $interval(callback, interval * 60000);
+            }
+        }
+
         _this.init = function() {
+            AutoSleepService.startAutoSleepTimer();
+
             var tick = $interval(updateTime, 1000);
             updateTime();
             GeolocationService.getLocation({enableHighAccuracy: true}).then(function(geoposition){
@@ -65,20 +102,55 @@
             var playing = false, sound;
             SoundCloudService.init();
 
-            var refreshMirrorData = function() {
+            var refreshCalendar = function() {
+                CalendarService.getCalendarEvents().then(function(response) {
+                    $scope.calendar = CalendarService.getFutureEvents();
+                }, function(error) {
+                    console.log(error);
+                });
+            };
+
+            registerRefreshInterval(refreshCalendar, 25);
+
+            var refreshFitbitData = function() {
+                console.log('refreshing fitbit data');
+                FitbitService.profileSummary(function(response){
+                    $scope.fbDailyAverage = response;
+                });
+
+                FitbitService.todaySummary(function(response){
+                    $scope.fbToday = response;
+                });
+
+                FitbitService.sleepSummary(function(response){
+                    $scope.fbSleep = response;
+                });
+
+                FitbitService.deviceSummary(function(response){
+                    $scope.fbDevices = response;
+                });
+            };
+
+            if($scope.fitbitEnabled){
+                registerRefreshInterval(refreshFitbitData, 60);
+            }
+
+            var refreshWeatherData = function() {
                 //Get our location and then get the weather for our location
                 GeolocationService.getLocation({enableHighAccuracy: true}).then(function(geoposition){
                     console.log("Geoposition", geoposition);
                     WeatherService.init(geoposition).then(function(){
-                        $scope.currentForcast = WeatherService.currentForcast();
-                        $scope.weeklyForcast = WeatherService.weeklyForcast();
-                        $scope.hourlyForcast = WeatherService.hourlyForcast();
-                        console.log("Current", $scope.currentForcast);
-                        console.log("Weekly", $scope.weeklyForcast);
-                        console.log("Hourly", $scope.hourlyForcast);
+                        $scope.currentForecast = WeatherService.currentForecast();
+                        $scope.weeklyForecast = WeatherService.weeklyForecast();
+                        $scope.hourlyForecast = WeatherService.hourlyForecast();
+                        $scope.minutelyForecast = WeatherService.minutelyForecast();
+                        console.log("Current", $scope.currentForecast);
+                        console.log("Weekly", $scope.weeklyForecast);
+                        console.log("Hourly", $scope.hourlyForecast);
+                        console.log("Minutely", $scope.minutelyForecast);
 
                         var skycons = new Skycons({"color": "#aaa"});
-                        skycons.add("icon_weather_current", $scope.currentForcast.iconAnimation);
+                        skycons.add("icon_weather_current", $scope.currentForecast.iconAnimation);
 
                         skycons.play();
 
@@ -91,34 +163,14 @@
                 }, function(error){
                     console.log(error);
                 });
-
-                CalendarService.getCalendarEvents().then(function(response) {
-                    $scope.calendar = CalendarService.getFutureEvents();
-                }, function(error) {
-                    console.log(error);
-                });
-
-                if ($scope.fitbitEnabled) {
-                    setTimeout(function() { refreshFitbitData(); }, 5000);
-                }
             };
 
-            var refreshFitbitData = function() {
-                console.log('refreshing fitbit data');
-                FitbitService.profileSummary(function(response){
-                    $scope.fbDailyAverage = response;
-                });
-                
-                FitbitService.todaySummary(function(response){
-                    $scope.fbToday = response;
-                });
-            };
-
-            refreshMirrorData();
-            $interval(refreshMirrorData, 1500000);
+            if(typeof config.forecast !== 'undefined'){
+                registerRefreshInterval(refreshWeatherData, config.forecast.refreshInterval || 2);
+            }
 
             var greetingUpdater = function () {
-                if(!Array.isArray(config.greeting) && typeof config.greeting.midday != 'undefined') {
+                if(typeof config.greeting !== 'undefined' && !Array.isArray(config.greeting) && typeof config.greeting.midday !== 'undefined') {
                     var hour = moment().hour();
                     var greetingTime = "midday";
 
@@ -136,8 +188,10 @@
                     $scope.greeting = config.greeting[Math.floor(Math.random() * config.greeting.length)];
                 }
             };
-            greetingUpdater();
-            $interval(greetingUpdater, 120000);
+
+            if(typeof config.greeting !== 'undefined'){
+                registerRefreshInterval(greetingUpdater, 60);
+            }
 
             var refreshTrafficData = function() {
                 TrafficService.getDurationForTrips().then(function(tripsWithTraffic) {
@@ -149,8 +203,9 @@
                 });
             };
 
-            refreshTrafficData();
-            $interval(refreshTrafficData, config.traffic.reload_interval * 60000);
+            if(typeof config.traffic !== 'undefined'){
+                registerRefreshInterval(refreshTrafficData, config.traffic.refreshInterval || 5);
+            }
 
             var refreshComic = function () {
                 console.log("Refreshing comic");
@@ -161,21 +216,83 @@
                 });
             };
 
-            refreshComic();
+            registerRefreshInterval(refreshComic, 12*60); // 12 hours
+
             var defaultView = function() {
                 console.debug("Ok, going to default view...");
                 $scope.focus = "default";
             }
 
-            $interval(refreshComic, 12*60*60000); // 12 hours
+            var refreshRss = function () {
+                console.log ("Refreshing RSS");
+                $scope.news = null;
+                RssService.refreshRssList().then(function() {
+                  $scope.news = RssService.getNews();
+                });
+
+            };
+
+            var updateNews = function() {
+                $scope.news = RssService.getNews();
+            };
+
+            var getStock = function() {
+              StockService.getStockQuotes().then(function(result) {
+                var stock = [];
+                if (result.query.results.quote instanceof Array) {
+                  stock = stock.concat(result.query.results.quote);
+                } else {
+                  stock.push(result.query.results.quote);
+                }
+                $scope.stock = stock;
+              }, function(error) {
+                console.log(error);
+              });
+            }    
+
+            if (typeof config.stock !== 'undefined' && config.stock.names.length) {
+              registerRefreshInterval(getStock, 30);
+            }
+
+            if(typeof config.rss !== 'undefined'){
+                registerRefreshInterval(refreshRss, config.rss.refreshInterval || 30);
+                registerRefreshInterval(updateNews, 2);
+            }
+
+            var getScrobblingTrack = function(){
+                ScrobblerService.getCurrentTrack().then(function(track) {
+                    $scope.track = track;
+                });
+            }
+
+            if(typeof config.lastfm !== 'undefined' && typeof config.lastfm.key !== 'undefined' && config.lastfm.user !== 'undefined'){
+                registerRefreshInterval(getScrobblingTrack, config.lastfm.refreshInterval || 0.6)
+            }
+
+            var refreshRss = function () {
+                console.log ("Refreshing RSS");
+                $scope.news = null;
+                RssService.refreshRssList();
+            };
+
+            var updateNews = function() {
+                $scope.shownews = false;
+                setTimeout(function(){ $scope.news = RssService.getNews(); $scope.shownews = true; }, 1000);
+            };
+
+            refreshRss();
+            $interval(refreshRss, config.rss.refreshInterval * 60000);
+            
+            updateNews();
+            $interval(updateNews, 8000);  // cycle through news every 8 seconds
 
             var addCommand = function(commandId, commandFunction){
                 var voiceId = 'commands.'+commandId+'.voice';
                 var textId = 'commands.'+commandId+'.text';
                 var descId = 'commands.'+commandId+'.description';
                 $translate([voiceId, textId, descId]).then(function (translations) {
-                    AnnyangService.addCommand(translations[voiceId], commandFunction);
-                    if (translations[textId] != '') {
+                    SpeechService.addCommand(translations[voiceId], commandFunction);
+                    if (translations[textId] !== '') {
                         var command = {"text": translations[textId], "description": translations[descId]};
                         $scope.commands.push(command);
                     }
@@ -185,11 +302,11 @@
             // List commands
             addCommand('list', function() {
                 console.debug("Here is a list of commands...");
-                console.log(AnnyangService.commands);
+                console.log(SpeechService.commands);
                 $scope.focus = "commands";
             });
 
-            
+
             // Go back to default view
             addCommand('home', defaultView);
 
@@ -202,12 +319,25 @@
             // Go back to default view
             addCommand('wake_up', defaultView);
 
+            // Turn off HDMI output
+            addCommand('screen off', function() {
+                console.debug('turning screen off');
+                AutoSleepService.sleep();
+            });
+
+            // Turn on HDMI output
+            addCommand('screen on', function() {
+                console.debug('turning screen on');
+                AutoSleepService.wake();
+                $scope.focus = "default"
+            });
+
             // Hide everything and "sleep"
             addCommand('debug', function() {
                 console.debug("Boop Boop. Showing debug info...");
                 $scope.debug = true;
             });
-            
+
             // Show map
             addCommand('map_show', function() {
                 console.debug("Going on an adventure?");
@@ -217,7 +347,7 @@
                     $scope.focus = "map";
                 });
             });
-            
+
             // Hide everything and "sleep"
             addCommand('map_location', function(location) {
                 console.debug("Getting map of", location);
@@ -250,12 +380,6 @@
             //SoundCloud search and play
             addCommand('sc_play', function(query) {
                 SoundCloudService.searchSoundCloud(query).then(function(response){
-                    SC.stream('/tracks/' + response[0].id).then(function(player){
-                        player.play();
-                        sound = player;
-                        playing = true;
-                    });
-
                     if (response[0].artwork_url){
                         $scope.scThumb = response[0].artwork_url.replace("-large.", "-t500x500.");
                     } else {
@@ -264,27 +388,23 @@
                     $scope.scWaveform = response[0].waveform_url;
                     $scope.scTrack = response[0].title;
                     $scope.focus = "sc";
-                    SoundCloudService.startVisualizer();
+                    SoundCloudService.play();
                 });
             });
-            
+
             //SoundCloud stop
             addCommand('sc_pause', function() {
-                sound.pause();
-                SoundCloudService.stopVisualizer();
+                SoundCloudService.pause();
                 $scope.focus = "default";
             });
             //SoundCloud resume
             addCommand('sc_resume', function() {
-                sound.play();
-                SoundCloudService.startVisualizer();
+                SoundCloudService.play();
                 $scope.focus = "sc";
             });
             //SoundCloud replay
             addCommand('sc_replay', function() {
-                sound.seek(0);
-                sound.play();
-                SoundCloudService.startVisualizer();
+                SoundCloudService.replay();
                 $scope.focus = "sc";
             });
 
@@ -329,9 +449,9 @@
                  console.debug("It is", moment().format('h:mm:ss a'));
             });
 
-            // Turn lights off
+            // Control light
             addCommand('light_action', function(state, action) {
-                HueService.performUpdate(state + " " + action);
+                LightService.performUpdate(state + " " + action);
             });
 
             //Show giphy image
@@ -344,7 +464,7 @@
 
             //Show fitbit stats (registered only if fitbit is configured in the main config)
             if ($scope.fitbitEnabled) {
-                AnnyangService.addCommand('show my walking', function() {
+                addCommand('show_my_walking', function() {
                     refreshFitbitData();
                 });
             }
@@ -411,22 +531,30 @@
             });
 
             var resetCommandTimeout;
-            //Track when the Annyang is listening to us
-            AnnyangService.start(function(listening){
-                $scope.listening = listening;
-            }, function(interimResult){
-                $scope.interimResult = interimResult;
-                $timeout.cancel(resetCommandTimeout);
-            }, function(result){
-                if(typeof result != 'undefined'){
-                    $scope.interimResult = result[0];
-                    resetCommandTimeout = $timeout(restCommand, 5000);
-                }
-            }, function(error){
-                console.log(error);
-                if(error.error == "network"){
-                    $scope.speechError = "Google Speech Recognizer is down :(";
-                    AnnyangService.abort();
+            //Register callbacks for Annyang and the Keyword Spotter
+            SpeechService.registerCallbacks({
+                listening : function(listening){
+                    $scope.listening = listening;
+                },
+                interimResult : function(interimResult){
+                    $scope.interimResult = interimResult;
+                    $timeout.cancel(resetCommandTimeout);
+                },
+                result : function(result){
+                    if(typeof result !== 'undefined'){
+                        $scope.interimResult = result[0];
+                        resetCommandTimeout = $timeout(restCommand, 5000);
+                    }
+                },
+                error : function(error){
+                    console.log(error);
+                    if(error.error == "network"){
+                        $scope.speechError = "Google Speech Recognizer: Network Error (Speech quota exceeded?)";
+                        SpeechService.abort();
+                    } else {
+                        // Even if it isn't a network error, stop making requests
+                        SpeechService.abort();
+                    }
                 }
             });
         };
@@ -438,7 +566,7 @@
         .controller('MirrorCtrl', MirrorCtrl);
 
     function themeController($scope) {
-        $scope.layoutName = (typeof config.layout != 'undefined' && config.layout)?config.layout:'main';
+        $scope.layoutName = (typeof config.layout !== 'undefined' && config.layout)?config.layout:'main';
     }
 
     angular.module('SmartMirror')
